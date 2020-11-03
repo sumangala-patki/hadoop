@@ -25,9 +25,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import org.apache.hadoop.fs.azurebfs.constants.AbfsOperationConstants;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContextFormat;
+import org.apache.hadoop.fs.azurebfs.utils.Listener;
+import org.apache.hadoop.fs.azurebfs.utils.testHeader;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -143,14 +144,23 @@ public abstract class AbstractAbfsIntegrationTest extends
   }
 
   protected boolean getIsNamespaceEnabled(AzureBlobFileSystem fs) throws IOException {
-    return fs.getAbfsStore().getIsNamespaceEnabled(
-        getTestTracingContext(fs, false));
+    return fs.getAbfsStore().getIsNamespaceEnabled(getTestTracingContext(fs,
+        false));
   }
 
-  public TracingContext getTestTracingContext(AzureBlobFileSystem fs, boolean isCont) {
+  //this is for correlation header tests
+  public TracingContext getTracingContext(AzureBlobFileSystem fs,
+      boolean isCont, Listener listener) {
+    AbfsConfiguration conf = fs.getAbfsStore().getAbfsConfiguration();
+    return new TracingContext(conf.getClientCorrelationID(),
+        fs.getFileSystemID(), "TS", conf.getTracingContextFormat(), listener);
+  }
+
+  public TracingContext getTestTracingContext(AzureBlobFileSystem fs,
+      boolean isCont) {
     if (fs == null) {
       return new TracingContext("test-corr-id", "test-fs-id", "TS", false,
-          TracingContextFormat.ALL_ID_FORMAT);
+          TracingContextFormat.ALL_ID_FORMAT, null);
     }
     String fsID = fs.getFileSystemID();
     AbfsConfiguration abfsConf = fs.getAbfsStore().getAbfsConfiguration();
@@ -158,8 +168,9 @@ public abstract class AbstractAbfsIntegrationTest extends
         abfsConf.getClientCorrelationID();
     TracingContextFormat format = abfsConf == null? TracingContextFormat.ALL_ID_FORMAT :
         abfsConf.getTracingContextFormat();
-    return new TracingContext(corrID, fsID, AbfsOperationConstants.TESTOP, isCont,
-        format);
+    Listener listener = new testHeader();
+    fs.registerListener(listener);
+    return new TracingContext(corrID, fsID, "TS", isCont, format, listener);
   }
 
 

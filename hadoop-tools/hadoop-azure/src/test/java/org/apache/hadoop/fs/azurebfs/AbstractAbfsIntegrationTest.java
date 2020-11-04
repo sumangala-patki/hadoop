@@ -148,14 +148,6 @@ public abstract class AbstractAbfsIntegrationTest extends
         false));
   }
 
-  //this is for correlation header tests
-  public TracingContext getTracingContext(AzureBlobFileSystem fs,
-      boolean isCont, Listener listener) {
-    AbfsConfiguration conf = fs.getAbfsStore().getAbfsConfiguration();
-    return new TracingContext(conf.getClientCorrelationID(),
-        fs.getFileSystemID(), "TS", conf.getTracingContextFormat(), listener);
-  }
-
   public TracingContext getTestTracingContext(AzureBlobFileSystem fs,
       boolean isCont) {
     if (fs == null) {
@@ -170,7 +162,7 @@ public abstract class AbstractAbfsIntegrationTest extends
         abfsConf.getTracingContextFormat();
     Listener listener = new testHeader();
     fs.registerListener(listener);
-    return new TracingContext(corrID, fsID, "TS", isCont, format, listener);
+    return new TracingContext(corrID, fsID, "TS", isCont, format, null);
   }
 
 

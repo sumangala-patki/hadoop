@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
 import org.apache.hadoop.fs.azurebfs.utils.Listener;
 import org.apache.hadoop.fs.azurebfs.utils.testHeader;
 import org.junit.Test;
@@ -79,8 +80,7 @@ public class ITestAzureBlobFileSystemListStatus extends
     }
 
     es.shutdownNow();
-    Listener listener = new testHeader();
-    fs.registerListener(listener);
+    fs.registerListener(new testHeader());
     FileStatus[] files = fs.listStatus(new Path("/"));
     assertEquals(TEST_FILES_NUMBER, files.length /* user directory */);
   }
@@ -94,6 +94,7 @@ public class ITestAzureBlobFileSystemListStatus extends
     final AzureBlobFileSystem fs = getFileSystem();
     Path path = new Path("/testFile");
     try(FSDataOutputStream ignored = fs.create(path)) {
+      fs.registerListener(new testHeader());
       FileStatus[] testFiles = fs.listStatus(path);
       assertEquals("length of test files", 1, testFiles.length);
       FileStatus status = testFiles[0];

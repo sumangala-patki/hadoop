@@ -99,6 +99,10 @@ public class TracingContext {
     this.retryCount = retryCount;
   }
 
+  public void setListener(Listener listener) {
+    this.listener = listener;
+  }
+
   public String toString() {
     String header = clientRequestID; //case 0, no IDs for correlation
     switch (format) {

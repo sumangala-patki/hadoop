@@ -80,7 +80,10 @@ public class ITestAzureBlobFileSystemListStatus extends
     }
 
     es.shutdownNow();
-    fs.registerListener(new testHeader());
+    fs.registerListener(new testHeader(
+        fs.getAbfsStore().getAbfsConfiguration().getClientCorrelationID(),
+        fs.getFileSystemID(), AbfsOperations.LISTSTATUS,
+        fs.getAbfsStore().getAbfsConfiguration().getMaxIoRetries()));
     FileStatus[] files = fs.listStatus(new Path("/"));
     assertEquals(TEST_FILES_NUMBER, files.length /* user directory */);
   }
@@ -94,7 +97,6 @@ public class ITestAzureBlobFileSystemListStatus extends
     final AzureBlobFileSystem fs = getFileSystem();
     Path path = new Path("/testFile");
     try(FSDataOutputStream ignored = fs.create(path)) {
-      fs.registerListener(new testHeader());
       FileStatus[] testFiles = fs.listStatus(path);
       assertEquals("length of test files", 1, testFiles.length);
       FileStatus status = testFiles[0];

@@ -25,10 +25,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import org.apache.hadoop.fs.azurebfs.utils.TestHeader;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContextFormat;
 import org.apache.hadoop.fs.azurebfs.utils.Listener;
-import org.apache.hadoop.fs.azurebfs.utils.testHeader;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -160,8 +160,7 @@ public abstract class AbstractAbfsIntegrationTest extends
         abfsConf.getClientCorrelationID();
     TracingContextFormat format = abfsConf == null? TracingContextFormat.ALL_ID_FORMAT :
         abfsConf.getTracingContextFormat();
-    Listener listener = new testHeader();
-    fs.registerListener(listener);
+
     return new TracingContext(corrID, fsID, "TS", isCont, format, null);
   }
 

@@ -21,7 +21,6 @@ package org.apache.hadoop.fs.azurebfs.services;
 import java.io.IOException;
 
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
-import org.apache.hadoop.fs.azurebfs.utils.testHeader;
 import org.junit.Assert;
 import org.junit.Test;
 

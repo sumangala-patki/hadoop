@@ -24,10 +24,8 @@ import java.util.Random;
 
 import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
 import org.apache.hadoop.fs.azurebfs.services.AbfsInputStream;
-import org.apache.hadoop.fs.azurebfs.services.AbfsInputStreamContext;
-import org.apache.hadoop.fs.azurebfs.utils.Listener;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
-import org.apache.hadoop.fs.azurebfs.utils.testHeader;
+import org.apache.hadoop.fs.azurebfs.utils.TestHeader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -107,7 +105,7 @@ public class ITestAbfsReadWriteAndSeek extends AbstractAbfsScaleTest {
         conf.getTracingContextFormat(), null);
     AbfsInputStream inputStream =
         fs.getAbfsStore().openFileForRead(TEST_PATH, null, tracingContext);
-    inputStream.registerListener(new testHeader(inputStream.getStreamID(),
+    inputStream.registerListener(new TestHeader(inputStream.getStreamID(),
         tracingContext.toString()));
     int n = inputStream.read();
   }

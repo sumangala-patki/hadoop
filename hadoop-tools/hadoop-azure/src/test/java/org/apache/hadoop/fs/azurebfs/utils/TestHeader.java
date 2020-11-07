@@ -1,19 +1,20 @@
 package org.apache.hadoop.fs.azurebfs.utils;
 
-import org.apache.hadoop.fs.azurebfs.AzureBlobFileSystem;
-import org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants;
 import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
 import org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations;
 import org.assertj.core.api.Assertions;
 
-public class testHeader implements Listener {
+public class TestHeader implements Listener {
   String prevContinuationHeader = "";
+  int prevRetryCount = 0;
   String clientCorrelationID;
   String fileSystemID;
   String streamID = "";
   String operation;
   int maxRetryCount = FileSystemConfigurations.DEFAULT_MAX_RETRY_ATTEMPTS;
   String GUID_PATTERN = "[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}";
+  // client-req-id as per docs: ^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?)
+  // {3}[0-9a-f]{12}[)}]?$
 
   @Override
   public void afterOp(String header) {
@@ -21,12 +22,17 @@ public class testHeader implements Listener {
     testBasicFormat(header);
 
     if (isContinuationOp(header)) {
+      // assert empty if not? pReqId is not empty for some ops not in contn list
       checkContinuationConsistency(header);
       prevContinuationHeader = header;
     }
+//    if (isStreamOperation(header)) {
+      // make 2 method calls each with AbfsInput/Output stream
+      // calls for same stream => assert same stream id
+//    }
   }
 
-  public testHeader(String clientCorrelationID,
+  public TestHeader(String clientCorrelationID,
       String fileSystemID, String operation, int maxRetryCount) {
     this.clientCorrelationID = clientCorrelationID;
     this.fileSystemID = fileSystemID;
@@ -34,7 +40,7 @@ public class testHeader implements Listener {
     this.maxRetryCount = maxRetryCount;
   }
 
-  public testHeader(String streamID, String streamHeader) {
+  public TestHeader(String streamID, String streamHeader) {
     String[] id_list = streamHeader.split(":");
     clientCorrelationID = id_list[0];
     fileSystemID = id_list[2];
@@ -54,6 +60,16 @@ public class testHeader implements Listener {
     return false;
   }
 
+  private boolean isStreamOperation(String header) {
+    String op = header.split(":")[5];
+    switch (op) {
+    case AbfsOperations.APPEND:
+    case AbfsOperations.FLUSH:
+    case AbfsOperations.READ: return true;
+    }
+    return false;
+  }
+
   private void checkContinuationConsistency(String newHeader) {
     String[] newIDs = newHeader.split(":");
     Assertions.assertThat(newIDs[3])
@@ -65,15 +81,9 @@ public class testHeader implements Listener {
     Assertions.assertThat(newIDs[2])
         .describedAs("FilesystemID should be same for requests with same filesystem")
         .isEqualTo(prevIDs[2]);
-    Assertions.assertThat(newIDs[0])
-        .describedAs("CorrelationID should be same for requests using a given config")
-        .isEqualTo(prevIDs[0]);
     Assertions.assertThat (newIDs[3])
         .describedAs("PrimaryReqID should be same for given set of requests")
         .isEqualTo(prevIDs[3]);
-    Assertions.assertThat(newIDs[4])
-        .describedAs("StreamID should be same for a given stream")
-        .isEqualTo(prevIDs[4]);
     System.out.println("all tests done");
   }
 
@@ -91,11 +101,25 @@ public class testHeader implements Listener {
         .matches(GUID_PATTERN);
     Assertions.assertThat(id_list[2]).describedAs("Filesystem ID incorrect")
         .isEqualTo(fileSystemID);
+    if (!isStreamOperation(header)) {
+      Assertions.assertThat(id_list[4])
+          .describedAs("StreamId should be empty").isEmpty();
+    } else {
+      Assertions.assertThat(id_list[4])
+          .describedAs("StreamId should not be empty").isNotEmpty();
+    }
     Assertions.assertThat(id_list[5]).describedAs("Operation name incorrect")
         .isEqualTo(operation);
-    Assertions.assertThat(Integer.parseInt(id_list[6]))
+    int retryCount = Integer.parseInt(id_list[6]);
+    Assertions.assertThat(retryCount)
         .describedAs("Retry count is not within range")
         .isLessThan(maxRetryCount).isGreaterThanOrEqualTo(0);
+    if(retryCount > 0) {
+      Assertions.assertThat(retryCount)
+          .describedAs("Retry count incorrect")
+          .isEqualTo(prevRetryCount + 1);
+    }
+    prevRetryCount = retryCount;
     System.out.println("basic test done");
   }
 }

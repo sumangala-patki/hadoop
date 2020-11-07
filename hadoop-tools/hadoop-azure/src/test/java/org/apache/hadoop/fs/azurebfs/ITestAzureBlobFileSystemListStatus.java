@@ -28,8 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
-import org.apache.hadoop.fs.azurebfs.utils.Listener;
-import org.apache.hadoop.fs.azurebfs.utils.testHeader;
+import org.apache.hadoop.fs.azurebfs.utils.TestHeader;
 import org.junit.Test;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -62,7 +61,7 @@ public class ITestAzureBlobFileSystemListStatus extends
     final List<Future<Void>> tasks = new ArrayList<>();
 
     ExecutorService es = Executors.newFixedThreadPool(10);
-    for (int i = 0; i < TEST_FILES_NUMBER/10; i++) {
+    for (int i = 0; i < TEST_FILES_NUMBER; i++) {
       final Path fileName = new Path("/test" + i);
       Callable<Void> callable = new Callable<Void>() {
         @Override
@@ -80,10 +79,11 @@ public class ITestAzureBlobFileSystemListStatus extends
     }
 
     es.shutdownNow();
-    fs.registerListener(new testHeader(
-        fs.getAbfsStore().getAbfsConfiguration().getClientCorrelationID(),
+    AbfsConfiguration conf = this.getConfiguration();
+    fs.registerListener(new TestHeader(
+        conf.getClientCorrelationID(),
         fs.getFileSystemID(), AbfsOperations.LISTSTATUS,
-        fs.getAbfsStore().getAbfsConfiguration().getMaxIoRetries()));
+        conf.getMaxIoRetries()));
     FileStatus[] files = fs.listStatus(new Path("/"));
     assertEquals(TEST_FILES_NUMBER, files.length /* user directory */);
   }
@@ -146,6 +146,7 @@ public class ITestAzureBlobFileSystemListStatus extends
     Path childF = fs.makeQualified(new Path("/test/f"));
     touch(childF);
     fileStatuses = fs.listStatus(testDir);
+    fs.registerListener(null);
     assertEquals(2, fileStatuses.length);
     final FileStatus childStatus = fileStatuses[0];
     assertEquals(childF, childStatus.getPath());

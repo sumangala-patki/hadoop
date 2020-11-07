@@ -253,6 +253,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
       TracingContext readAheadTracingContext = new TracingContext(tracingContext);
       readAheadTracingContext.setListener(listener);
       readAheadTracingContext.setPrimaryRequestID();
+      System.out.println("SET PREQ ID ONCE");
       while (numReadAheads > 0 && nextOffset < contentLength) {
         nextSize = Math.min((long) bufferSize, contentLength - nextOffset);
         LOG.debug("issuing read ahead requestedOffset = {} requested size {}",

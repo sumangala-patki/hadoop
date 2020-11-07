@@ -26,10 +26,6 @@ public class TestHeader implements Listener {
       checkContinuationConsistency(header);
       prevContinuationHeader = header;
     }
-//    if (isStreamOperation(header)) {
-      // make 2 method calls each with AbfsInput/Output stream
-      // calls for same stream => assert same stream id
-//    }
   }
 
   public TestHeader(String clientCorrelationID,
@@ -40,6 +36,7 @@ public class TestHeader implements Listener {
     this.maxRetryCount = maxRetryCount;
   }
 
+  /*
   public TestHeader(String streamID, String streamHeader) {
     String[] id_list = streamHeader.split(":");
     clientCorrelationID = id_list[0];
@@ -47,6 +44,7 @@ public class TestHeader implements Listener {
     operation = id_list[5];
     this.streamID = streamID;
   }
+  */
 
   private boolean isContinuationOp(String header) {
     String op = header.split(":")[5];

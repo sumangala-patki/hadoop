@@ -110,11 +110,6 @@ public class ITestCorrelationHeader extends AbstractAbfsIntegrationTest {
         false, true, null, null, false,
         null, getTestTracingContext(fs, false));
 
-    //Why doesn't this work with listpath?!
-//        client.listPath("/", false,
-//        fs.getAbfsStore().getAbfsConfiguration().getListMaxResults(), null,
-//        getTestTracingContext(fs, true));
-
     int responseCode = op.getResult().getStatusCode();
     Assertions.assertThat(responseCode).describedAs("Status code")
         .isEqualTo(HTTP_CREATED);

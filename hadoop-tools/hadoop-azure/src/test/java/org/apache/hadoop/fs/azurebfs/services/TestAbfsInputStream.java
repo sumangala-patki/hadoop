@@ -426,7 +426,6 @@ public class TestAbfsInputStream extends
 
     AbfsInputStream inputStream = getAbfsInputStream(client, "testSuccessfulReadAhead.txt");
 
-
     queueReadAheads(inputStream);
 
     // AbfsInputStream Read would have waited for the read-ahead for the requested offset

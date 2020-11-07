@@ -18,14 +18,9 @@
 
 package org.apache.hadoop.fs.azurebfs;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
-import org.apache.hadoop.fs.azurebfs.services.AbfsInputStream;
-import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
-import org.apache.hadoop.fs.azurebfs.utils.TestHeader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -83,31 +78,8 @@ public class ITestAbfsReadWriteAndSeek extends AbstractAbfsScaleTest {
     final byte[] readBuffer = new byte[4 * bufferSize];
     int result;
     try (FSDataInputStream inputStream = fs.open(TEST_PATH)) {
-      result = inputStream.read(readBuffer, 0, bufferSize * 4);
+      result = inputStream.read(readBuffer, 0, bufferSize*4);
     }
-  }
-
-  @Test
-  public void testCorrelationStreamID() throws IOException {
-    final AzureBlobFileSystem fs = getFileSystem();
-    final AbfsConfiguration abfsConfiguration = fs.getAbfsStore().getAbfsConfiguration();
-    int bufferSize = 32;
-    abfsConfiguration.setReadBufferSize(bufferSize);
-    final byte[] b = new byte[bufferSize * 10];
-    new Random().nextBytes(b);
-    try (FSDataOutputStream stream = fs.create(TEST_PATH)) {
-      stream.write(b);
-    }
-    AbfsConfiguration conf = fs.getAbfsStore().getAbfsConfiguration();
-    TracingContext tracingContext =
-        new TracingContext(conf.getClientCorrelationID(),
-            fs.getFileSystemID(), AbfsOperations.READ, true,
-        conf.getTracingContextFormat(), null);
-    AbfsInputStream inputStream =
-        fs.getAbfsStore().openFileForRead(TEST_PATH, null, tracingContext);
-    inputStream.registerListener(new TestHeader(inputStream.getStreamID(),
-        tracingContext.toString()));
-    int n = inputStream.read();
   }
 
   private void testReadWriteAndSeek(int bufferSize) throws Exception {

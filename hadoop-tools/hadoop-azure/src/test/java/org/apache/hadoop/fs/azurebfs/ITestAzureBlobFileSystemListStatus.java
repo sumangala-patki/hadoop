@@ -146,7 +146,6 @@ public class ITestAzureBlobFileSystemListStatus extends
     Path childF = fs.makeQualified(new Path("/test/f"));
     touch(childF);
     fileStatuses = fs.listStatus(testDir);
-    fs.registerListener(null);
     assertEquals(2, fileStatuses.length);
     final FileStatus childStatus = fileStatuses[0];
     assertEquals(childF, childStatus.getPath());

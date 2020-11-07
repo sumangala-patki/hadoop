@@ -140,8 +140,6 @@ public class AbfsRestOperation {
     this.abfsCounters = client.getAbfsCounters();
   }
 
-//  public AbfsRestOperation(){
-//  };
   /**
    * Initializes a new REST operation.
    *

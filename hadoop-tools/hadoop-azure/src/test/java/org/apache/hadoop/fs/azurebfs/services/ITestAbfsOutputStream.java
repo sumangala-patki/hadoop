@@ -1,3 +1,4 @@
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +19,7 @@
 
 package org.apache.hadoop.fs.azurebfs.services;
 
+import org.apache.hadoop.fs.azurebfs.utils.TracingHeaderValidator;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
@@ -73,6 +75,7 @@ public class ITestAbfsOutputStream extends AbstractAbfsIntegrationTest {
     Assertions.assertThat(stream.getMaxRequestsThatCanBeQueued())
         .describedAs("maxRequestsToQueue should be " + maxRequestsToQueue)
         .isEqualTo(maxRequestsToQueue);
+
   }
 
 }

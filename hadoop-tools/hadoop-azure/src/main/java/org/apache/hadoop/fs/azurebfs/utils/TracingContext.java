@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.fs.azurebfs.utils;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.EMPTY_STRING;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.azurebfs.services.AbfsClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +31,12 @@ public class TracingContext {
   private final String clientCorrelationID;
   private final String fileSystemID;
   private String clientRequestID = "";
-  private String primaryRequestID;
+  public String primaryRequestID;
   private String streamID;
   private int retryCount;
   private final String hadoopOpName;
   private final TracingContextFormat format;
-  private Listener listener;
+  private Listener listener = null;
 
   private static final Logger LOG = LoggerFactory.getLogger(AbfsClient.class);
   public static final int MAX_CLIENT_CORRELATION_ID_LENGTH = 72;
@@ -70,7 +70,9 @@ public class TracingContext {
     this.retryCount = 0;
     this.primaryRequestID = originalTracingContext.primaryRequestID;
     this.format = originalTracingContext.format;
-    this.listener = originalTracingContext.listener;
+    if(originalTracingContext.listener != null) {
+      this.listener = originalTracingContext.listener.getClone();
+    }
   }
 
   public String validateClientCorrelationID(String clientCorrelationID) {
@@ -83,16 +85,25 @@ public class TracingContext {
     return clientCorrelationID;
   }
 
-  public void generateClientRequestID() {
+  public void generateClientRequestID() throws IOException {
     clientRequestID = UUID.randomUUID().toString();
   }
 
   public void setPrimaryRequestID() {
     primaryRequestID = UUID.randomUUID().toString();
+    System.out.println("preqid set to" + primaryRequestID);
+    if(listener != null)
+      listener.updatePrimaryRequestID(primaryRequestID);
   }
 
   public void setStreamID(String stream) {
     streamID = stream;
+    if(listener != null)
+      listener.updateStreamID(primaryRequestID);
+  }
+
+  public void setOperation(String operation) {
+    this.hadoopOpName = operation;
   }
 
   public void setRetryCount(int retryCount) {
@@ -117,4 +128,9 @@ public class TracingContext {
     }
     return header;
   }
+
+//  public void validateTracingHeader() {
+//    if (listener != null)
+//      listener.afterOp(toString());
+//  }
 }

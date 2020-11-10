@@ -569,6 +569,7 @@ public class AbfsClient implements Closeable {
             buffer,
             bufferOffset,
             bufferLength, sasTokenForReuse);
+    System.out.println("reading " + tracingContext.primaryRequestID);
     op.execute(tracingContext);
 
     return op;

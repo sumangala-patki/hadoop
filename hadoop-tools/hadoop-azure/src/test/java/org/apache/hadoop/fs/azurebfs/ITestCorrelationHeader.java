@@ -25,6 +25,10 @@ import java.util.Map;
 import static org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants.HTTP_METHOD_PUT;
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.AZURE_MAX_IO_RETRIES;
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_CLIENT_CORRELATIONID;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class MockRestOperation extends AbfsRestOperation {
   int prevRetryCount = 0;
@@ -54,11 +58,10 @@ class MockRestOperation extends AbfsRestOperation {
   }
 
   public void testRetryNumber(int retryCount, TracingContext tracingContext) {
+    tracingContext.setListener(null);
     String[] id_list = tracingContext.toString().split(":");
     String clientRequestId = id_list[1];
     int retryCountTC = Integer.parseInt(id_list[6]);
-    System.out.println("Current retry count is " + retryCount);
-    System.out.println(tracingContext.toString());
 
     // check if retryCount correctly copied to tracingContext
     Assertions.assertThat(retryCountTC)
@@ -163,11 +166,20 @@ public class ITestCorrelationHeader extends AbstractAbfsIntegrationTest {
         (AzureBlobFileSystem) FileSystem.newInstance(getFileSystem().getUri()
             , config);
     TracingContext tracingContext = getTestTracingContext(fs, false);
-    AbfsRestOperation op =
-        new MockRestOperation(AbfsRestOperationType.CreatePath,
-            fs.getAbfsClient(), HTTP_METHOD_PUT,
-            new URL("http://www.azure.com"), new ArrayList<>());
-    op.execute(tracingContext);
+//    AbfsRestOperation op =
+//        new MockRestOperation(AbfsRestOperationType.CreatePath,
+//            fs.getAbfsClient(), HTTP_METHOD_PUT,
+//            new URL("http://www.azure.com"), new ArrayList<>());
+//    op.execute(tracingContext);
+
+    AbfsRestOperation oprest = mock(AbfsRestOperation.class);
+//    doThrow(IOException.class).when(oprest)
+//        .updateClientRequestHeader(any(AbfsHttpOperation.class),
+//        any(TracingContext.class));
+    TracingContext tracingContext1 = mock(TracingContext.class);
+    doThrow(IOException.class).when(tracingContext1)
+        .generateClientRequestID();
+    oprest.execute(tracingContext1);
   }
 
   @Ignore

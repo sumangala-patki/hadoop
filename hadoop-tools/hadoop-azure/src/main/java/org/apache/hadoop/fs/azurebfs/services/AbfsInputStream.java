@@ -28,6 +28,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
+import org.apache.hadoop.fs.azurebfs.utils.Listener;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +79,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   private final AbfsInputStreamStatistics streamStatistics;
   private long bytesFromReadAhead; // bytes read from readAhead; for testing
   private long bytesFromRemoteRead; // bytes read remotely; for testing
+  private Listener listener;
 
   public AbfsInputStream(
           final AbfsClient client,
@@ -100,6 +103,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     this.streamStatistics = abfsInputStreamContext.getStreamStatistics();
     this.inputStreamID = getInputStreamID();
     this.tracingContext = new TracingContext(tracingContext);
+    this.tracingContext.setOperation(AbfsOperations.READ);
     this.tracingContext.setStreamID(inputStreamID);
   }
 
@@ -109,6 +113,15 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
 
   private String getInputStreamID() {
     return StringUtils.right(UUID.randomUUID().toString(), 12);
+  }
+
+  public void registerListener(Listener listener1) {
+    listener = listener1;
+    tracingContext.setListener(listener);
+  }
+
+  public String getStreamID() {
+    return inputStreamID;
   }
 
   @Override
@@ -235,16 +248,18 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
       int receivedBytes;
 
       // queue read-aheads
-      int numReadAheads = this.readAheadQueueDepth;
+      int numReadAheads = 3;//this.readAheadQueueDepth;
       long nextSize;
       long nextOffset = position;
       LOG.debug("read ahead enabled issuing readheads num = {}", numReadAheads);
       TracingContext readAheadTracingContext = new TracingContext(tracingContext);
       readAheadTracingContext.setPrimaryRequestID();
+      System.out.println("SET PREQ" + numReadAheads);
       while (numReadAheads > 0 && nextOffset < contentLength) {
         nextSize = Math.min((long) bufferSize, contentLength - nextOffset);
         LOG.debug("issuing read ahead requestedOffset = {} requested size {}",
             nextOffset, nextSize);
+        System.out.println(nextSize + "loop" + numReadAheads + nextOffset);
         ReadBufferManager.getBufferManager().queueReadAhead(this, nextOffset, (int) nextSize,
                 new TracingContext(readAheadTracingContext));
         nextOffset = nextOffset + nextSize;
@@ -264,10 +279,12 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
       }
 
       // got nothing from read-ahead, do our own read now
+      System.out.println("got nothing from rdahead");
       receivedBytes = readRemote(position, b, offset, length, new TracingContext(tracingContext));
       return receivedBytes;
     } else {
       LOG.debug("read ahead disabled, reading remote");
+      System.out.println("no rdahead");
       return readRemote(position, b, offset, length, new TracingContext(tracingContext));
     }
   }

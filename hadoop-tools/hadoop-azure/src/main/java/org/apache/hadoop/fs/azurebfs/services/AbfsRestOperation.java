@@ -206,8 +206,8 @@ public class AbfsRestOperation {
     LOG.trace("{} REST operation complete", operationType);
   }
 
-  protected void updateClientRequestHeader(AbfsHttpOperation httpOperation,
-      TracingContext tracingContext) {
+  public void updateClientRequestHeader(AbfsHttpOperation httpOperation,
+      TracingContext tracingContext) throws IOException {
     tracingContext.generateClientRequestID();
     httpOperation.getConnection()
         .setRequestProperty(HttpHeaderConfigurations.X_MS_CLIENT_REQUEST_ID,

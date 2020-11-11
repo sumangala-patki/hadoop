@@ -107,11 +107,9 @@ public class ITestAbfsReadWriteAndSeek extends AbstractAbfsScaleTest {
           abfsConfiguration.getMaxIoRetries(),
           ((AbfsInputStream) inputStream.getWrappedStream()).getStreamID()));
       inputStream.seek(bufferSize);
-      System.out.println("first read");
       result = inputStream.read(readBuffer, bufferSize, bufferSize);
       assertNotEquals(-1, result);
       inputStream.seek(0);
-      System.out.println("second read");
       result = inputStream.read(readBuffer, 0, bufferSize);
     }
     assertNotEquals("data read in final read()", -1, result);

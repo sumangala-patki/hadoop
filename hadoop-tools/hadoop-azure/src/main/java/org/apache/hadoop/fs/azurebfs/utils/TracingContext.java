@@ -31,7 +31,7 @@ public class TracingContext {
   private final String clientCorrelationID;
   private final String fileSystemID;
   private String clientRequestID = "";
-  public String primaryRequestID;
+  private String primaryRequestID;
   private String streamID;
   private int retryCount;
   private final String hadoopOpName;
@@ -60,6 +60,8 @@ public class TracingContext {
     this(clientCorrelationID, fileSystemID, hadoopOpName,
         tracingContextFormat, listener);
     primaryRequestID = needsPrimaryReqId? UUID.randomUUID().toString() : "";
+    if (listener != null)
+      listener.updatePrimaryRequestID(primaryRequestID);
   }
 
   public TracingContext(TracingContext originalTracingContext) {
@@ -85,21 +87,18 @@ public class TracingContext {
     return clientCorrelationID;
   }
 
-  public void generateClientRequestID() throws IOException {
+  public void generateClientRequestID() {
     clientRequestID = UUID.randomUUID().toString();
   }
 
   public void setPrimaryRequestID() {
     primaryRequestID = UUID.randomUUID().toString();
-    System.out.println("preqid set to" + primaryRequestID);
     if(listener != null)
       listener.updatePrimaryRequestID(primaryRequestID);
   }
 
   public void setStreamID(String stream) {
     streamID = stream;
-    if(listener != null)
-      listener.updateStreamID(primaryRequestID);
   }
 
   public void setOperation(String operation) {

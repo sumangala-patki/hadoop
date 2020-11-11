@@ -192,11 +192,15 @@ public class ITestCorrelationHeader extends AbstractAbfsIntegrationTest {
 
     testClasses.put(new ITestAzureBlobFileSystemListStatus(),
         ITestAzureBlobFileSystemListStatus.class.getMethod("testListPath"));
+    testClasses.put(new ITestAzureBlobFileSystemCreate(),
+        ITestAzureBlobFileSystemCreate.class.getMethod(
+            "testDefaultCreateOverwriteFileTest"));
     //add other ops' testClasses and testMethods that have listener registered
 
     for (AbstractAbfsIntegrationTest testClass : testClasses.keySet()) {
       testClass.setup();
       testClasses.get(testClass).invoke(testClass);
+      testClass.teardown();
     }
   }
 }

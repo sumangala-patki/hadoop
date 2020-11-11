@@ -4,14 +4,15 @@ import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
 import org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations;
 import org.assertj.core.api.Assertions;
 
+import javax.sound.midi.SysexMessage;
+
 public class TracingHeaderValidator implements Listener {
-  String prevContinuationHeader = "";
   int prevRetryCount = 0;
   String prevClientRequestID = "";
   String clientCorrelationID;
   String fileSystemID;
   String primaryRequestID = "";
-  boolean needsPrimaryRequestID = false;
+  boolean needsPrimaryRequestID;
   String streamID = "";
   String operation;
   int maxRetryCount = FileSystemConfigurations.DEFAULT_MAX_RETRY_ATTEMPTS;
@@ -27,11 +28,6 @@ public class TracingHeaderValidator implements Listener {
   @Override
   public void updatePrimaryRequestID(String primaryRequestID) {
     this.primaryRequestID = primaryRequestID;
-  }
-
-  @Override
-  public void updateStreamID(String streamID) {
-    this.streamID = streamID;
   }
 
   @Override
@@ -63,13 +59,8 @@ public class TracingHeaderValidator implements Listener {
 
   private void validateTracingHeader(String tracingContextHeader) {
     String[] id_list = tracingContextHeader.split(":");
-//    String[] prevIDs = prevContinuationHeader.split(":");
     validateBasicFormat(id_list);
-//    for (String prevID : prevIDs)
-//      System.out.println(prevID + "...");
-//    if (!prevContinuationHeader.isEmpty() && requiresPrimaryRequestId(id_list[5])) {
     if (needsPrimaryRequestID) {
-      System.out.println("checking preq");
       Assertions.assertThat(id_list[3])
           .describedAs("PrimaryReqID should be common for these requests")
           .isEqualTo(primaryRequestID);
@@ -77,46 +68,12 @@ public class TracingHeaderValidator implements Listener {
           "FilesystemID should be same for requests with same filesystem")
           .isEqualTo(fileSystemID);
     }
-//    if (!prevContinuationHeader.isEmpty()) {
-//      System.out.println("prev" + prevContinuationHeader);
-//      if (!prevIDs[3].isEmpty() && !id_list[3].isEmpty()) {
-//        System.out.println("preq");
-//        Assertions.assertThat(id_list[3])
-//            .describedAs("PrimaryReqID should be common for these requests")
-//            .isEqualTo(primaryRequestID);
-//        Assertions.assertThat(id_list[2]).describedAs(
-//            "FilesystemID should be same for requests with same filesystem")
-//            .isEqualTo(prevIDs[2]);
-//      }
-//    }
-//    prevContinuationHeader = tracingContextHeader;
-//    if (isStreamOperation(id_list[5])) {
-//    if (!id_list[4].isEmpty()) {
       if (!streamID.isEmpty()) {
         System.out.println("check stream" + streamID);
         Assertions.assertThat(id_list[4])
             .describedAs("Stream id should be common for these requests")
             .isEqualTo(streamID);
       }
-  }
-
-//  private boolean requiresPrimaryRequestId(String operation) {
-//    switch (operation) {
-//    case AbfsOperations.LISTSTATUS:
-//    case AbfsOperations.READ:
-//    case AbfsOperations.RENAME:
-//    case AbfsOperations.CREATE: return true;
-//    }
-//    return false;
-//  }
-
-  private boolean isStreamOperation(String operation) {
-    switch (operation) {
-    case AbfsOperations.APPEND:
-    case AbfsOperations.FLUSH:
-    case AbfsOperations.READ: return true;
-    }
-    return false;
   }
 
   private void validateBasicFormat(String[] id_list) {

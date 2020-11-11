@@ -30,9 +30,7 @@ import java.util.concurrent.Future;
 import java.io.IOException;
 
 import org.apache.hadoop.fs.StreamCapabilities;
-import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
 import org.apache.hadoop.fs.azurebfs.services.AbfsOutputStream;
-import org.apache.hadoop.fs.azurebfs.utils.TracingHeaderValidator;
 import org.hamcrest.core.IsEqual;
 import org.hamcrest.core.IsNot;
 import org.junit.Test;
@@ -78,16 +76,6 @@ public class ITestAzureBlobFileSystemFlush extends AbstractAbfsScaleTest {
 
         for (int j = 0; j < FLUSH_TIMES; j++) {
           stream.flush();
-          Thread.sleep(10);
-        }
-
-        AbfsOutputStream out = (AbfsOutputStream)stream.getWrappedStream();
-        AbfsConfiguration conf = fs.getAbfsStore().getAbfsConfiguration();
-        out.registerListener(new TracingHeaderValidator(conf.getClientCorrelationID(),
-            fs.getFileSystemID(), AbfsOperations.FLUSH, false,
-            conf.getMaxIoRetries(), out.getStreamID()));
-        for (int j = 0; j < FLUSH_TIMES; j++) {
-          out.flush();
           Thread.sleep(10);
         }
       }

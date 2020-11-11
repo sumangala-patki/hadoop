@@ -201,18 +201,15 @@ public class AbfsOutputStream extends OutputStream implements Syncable, StreamCa
     Preconditions.checkArgument(data != null, "null data");
 
     if (off < 0 || length < 0 || length > data.length - off) {
-      System.out.println(data.length);
       throw new IndexOutOfBoundsException();
     }
 
     int currentOffset = off;
     int writableBytes = bufferSize - bufferIndex;
     int numberOfBytesToWrite = length;
-    System.out.println(writableBytes);
 
     while (numberOfBytesToWrite > 0) {
       if (writableBytes <= numberOfBytesToWrite) {
-        System.out.println(numberOfBytesToWrite + " " + writableBytes);
         System.arraycopy(data, currentOffset, buffer, bufferIndex, writableBytes);
         bufferIndex += writableBytes;
         writeCurrentBufferToService();
@@ -347,7 +344,6 @@ public class AbfsOutputStream extends OutputStream implements Syncable, StreamCa
 
   private void writeAppendBlobCurrentBufferToService() throws IOException {
     if (bufferIndex == 0) {
-      System.out.println("hi");
       return;
     }
     outputStreamStatistics.writeCurrentBuffer();
@@ -360,7 +356,6 @@ public class AbfsOutputStream extends OutputStream implements Syncable, StreamCa
     final long offset = position;
     position += bytesLength;
     AbfsPerfTracker tracker = client.getAbfsPerfTracker();
-    System.out.println("hi");
     try (AbfsPerfInfo perfInfo = new AbfsPerfInfo(tracker,
             "writeCurrentBufferToService", "append")) {
       AbfsRestOperation op = client.append(path, offset, bytes, 0,
@@ -387,7 +382,6 @@ public class AbfsOutputStream extends OutputStream implements Syncable, StreamCa
   }
 
   private synchronized void writeCurrentBufferToService() throws IOException {
-    System.out.println("hi");
     if (this.isAppendBlob) {
       writeAppendBlobCurrentBufferToService();
       return;
@@ -482,7 +476,6 @@ public class AbfsOutputStream extends OutputStream implements Syncable, StreamCa
     try (AbfsPerfInfo perfInfo = new AbfsPerfInfo(tracker,
             "flushWrittenBytesToServiceInternal", "flush")) {
 
-      System.out.println("flush");
       AbfsRestOperation op = client.flush(path, offset, retainUncommitedData, isClose, cachedSasToken.get(),
           new TracingContext(tracingContext));
       cachedSasToken.update(op.getSasToken());

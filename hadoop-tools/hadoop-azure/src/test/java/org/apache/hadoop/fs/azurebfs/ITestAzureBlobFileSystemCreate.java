@@ -25,7 +25,9 @@ import java.lang.reflect.Field;
 import java.util.EnumSet;
 import java.util.UUID;
 
+import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
+import org.apache.hadoop.fs.azurebfs.utils.TracingHeaderValidator;
 import org.junit.Test;
 
 import org.apache.hadoop.conf.Configuration;
@@ -242,6 +244,7 @@ public class ITestAzureBlobFileSystemCreate extends
     final AzureBlobFileSystem fs =
         (AzureBlobFileSystem) FileSystem.newInstance(currentFs.getUri(),
             config);
+    AbfsConfiguration conf = fs.getAbfsStore().getAbfsConfiguration();
 
     long totalConnectionMadeBeforeTest = fs.getInstrumentationMap()
         .get(CONNECTIONS_MADE.getStatName());
@@ -263,8 +266,12 @@ public class ITestAzureBlobFileSystemCreate extends
         fs.getInstrumentationMap());
 
     // Case 2: Not Overwrite - File pre-exists
+    fs.registerListener(new TracingHeaderValidator(conf.getClientCorrelationID(),
+        fs.getFileSystemID(), AbfsOperations.CREATE, false,
+        conf.getMaxIoRetries()));
     intercept(FileAlreadyExistsException.class,
         () -> fs.create(nonOverwriteFile, false));
+    fs.registerListener(null);
 
     // One request to server to create path should be issued
     createRequestCount++;
@@ -290,7 +297,11 @@ public class ITestAzureBlobFileSystemCreate extends
         fs.getInstrumentationMap());
 
     // Case 4: Overwrite - File pre-exists
+    fs.registerListener(new TracingHeaderValidator(conf.getClientCorrelationID(),
+        fs.getFileSystemID(), AbfsOperations.CREATE, true,
+        conf.getMaxIoRetries()));
     fs.create(overwriteFilePath, true);
+    fs.registerListener(null);
 
     if (enableConditionalCreateOverwrite) {
       // Three requests will be sent to server to create path,

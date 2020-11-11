@@ -206,8 +206,8 @@ public class AbfsRestOperation {
     LOG.trace("{} REST operation complete", operationType);
   }
 
-  public void updateClientRequestHeader(AbfsHttpOperation httpOperation,
-      TracingContext tracingContext) throws IOException {
+  protected void updateClientRequestHeader(AbfsHttpOperation httpOperation,
+      TracingContext tracingContext) {
     tracingContext.generateClientRequestID();
     httpOperation.getConnection()
         .setRequestProperty(HttpHeaderConfigurations.X_MS_CLIENT_REQUEST_ID,
@@ -220,7 +220,7 @@ public class AbfsRestOperation {
    * attempt.
    */
   protected boolean executeHttpOperation(final int retryCount,
-      TracingContext tracingContext) throws AzureBlobFileSystemException {
+    TracingContext tracingContext) throws AzureBlobFileSystemException {
     AbfsHttpOperation httpOperation = null;
     try {
       // initialize the HTTP request and open the connection

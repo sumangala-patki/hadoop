@@ -90,7 +90,7 @@ public class ITestAzureBlobFileSystemListStatus extends
     fs1.registerListener(new TracingHeaderValidator(
         conf.getClientCorrelationID(),
         fs1.getFileSystemID(), AbfsOperations.LISTSTATUS, true,
-        conf.getMaxIoRetries()));
+        0));
     FileStatus[] files = fs1.listStatus(new Path("/"));
     assertEquals(TEST_FILES_NUMBER, files.length /* user directory */);
   }

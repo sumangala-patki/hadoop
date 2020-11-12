@@ -104,7 +104,7 @@ public class ITestAbfsReadWriteAndSeek extends AbstractAbfsScaleTest {
       ((AbfsInputStream) inputStream.getWrappedStream()).registerListener(new
           TracingHeaderValidator(abfsConfiguration.getClientCorrelationID(),
           fs.getFileSystemID(), AbfsOperations.READ, true,
-          abfsConfiguration.getMaxIoRetries(),
+          0,
           ((AbfsInputStream) inputStream.getWrappedStream()).getStreamID()));
       inputStream.seek(bufferSize);
       result = inputStream.read(readBuffer, bufferSize, bufferSize);

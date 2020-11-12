@@ -267,8 +267,7 @@ public class ITestAzureBlobFileSystemCreate extends
 
     // Case 2: Not Overwrite - File pre-exists
     fs.registerListener(new TracingHeaderValidator(conf.getClientCorrelationID(),
-        fs.getFileSystemID(), AbfsOperations.CREATE, false,
-        conf.getMaxIoRetries()));
+        fs.getFileSystemID(), AbfsOperations.CREATE, false, 0));
     intercept(FileAlreadyExistsException.class,
         () -> fs.create(nonOverwriteFile, false));
     fs.registerListener(null);
@@ -299,7 +298,7 @@ public class ITestAzureBlobFileSystemCreate extends
     // Case 4: Overwrite - File pre-exists
     fs.registerListener(new TracingHeaderValidator(conf.getClientCorrelationID(),
         fs.getFileSystemID(), AbfsOperations.CREATE, true,
-        conf.getMaxIoRetries()));
+        0));
     fs.create(overwriteFilePath, true);
     fs.registerListener(null);
 

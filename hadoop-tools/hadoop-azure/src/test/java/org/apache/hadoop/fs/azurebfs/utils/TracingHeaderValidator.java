@@ -1,21 +1,15 @@
 package org.apache.hadoop.fs.azurebfs.utils;
 
-import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
-import org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations;
 import org.assertj.core.api.Assertions;
 
-import javax.sound.midi.SysexMessage;
-
 public class TracingHeaderValidator implements Listener {
-  int prevRetryCount = 0;
-  String prevClientRequestID = "";
   String clientCorrelationID;
   String fileSystemID;
   String primaryRequestID = "";
   boolean needsPrimaryRequestID;
   String streamID = "";
   String operation;
-  int maxRetryCount = FileSystemConfigurations.DEFAULT_MAX_RETRY_ATTEMPTS;
+  int retryNum;
   String GUID_PATTERN = "[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}";
   // client-req-id as per docs: ^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?)
   // {3}[0-9a-f]{12}[)}]?$
@@ -34,26 +28,26 @@ public class TracingHeaderValidator implements Listener {
   public TracingHeaderValidator getClone() {
     TracingHeaderValidator tracingHeaderValidator =
         new TracingHeaderValidator(clientCorrelationID, fileSystemID,
-            operation, needsPrimaryRequestID, maxRetryCount, streamID);
+            operation, needsPrimaryRequestID, retryNum, streamID);
     tracingHeaderValidator.primaryRequestID = primaryRequestID;
     return tracingHeaderValidator;
   }
 
   public TracingHeaderValidator(String clientCorrelationID,
       String fileSystemID, String operation,
-      boolean needsPrimaryRequestID, int maxRetryCount) {
+      boolean needsPrimaryRequestID, int retryNum) {
     this.clientCorrelationID = clientCorrelationID;
     this.fileSystemID = fileSystemID;
     this.operation = operation;
-    this.maxRetryCount = maxRetryCount;
+    this.retryNum = retryNum;
     this.needsPrimaryRequestID = needsPrimaryRequestID;
   }
 
   public TracingHeaderValidator(String clientCorrelationID,
       String fileSystemID, String operation, boolean needsPrimaryRequestID,
-      int maxRetryCount, String streamID) {
+      int retryNum, String streamID) {
     this(clientCorrelationID, fileSystemID, operation, needsPrimaryRequestID,
-        maxRetryCount);
+        retryNum);
     this.streamID = streamID;
   }
 
@@ -93,21 +87,11 @@ public class TracingHeaderValidator implements Listener {
         .matches(GUID_PATTERN);
     Assertions.assertThat(id_list[2]).describedAs("Filesystem ID incorrect")
         .isEqualTo(fileSystemID);
-//    Assertions.assertThat(id_list[5]).describedAs("Operation name incorrect")
-//        .isEqualTo(operation);
+    Assertions.assertThat(id_list[5]).describedAs("Operation name incorrect")
+        .isEqualTo(operation);
     int retryCount = Integer.parseInt(id_list[6]);
     Assertions.assertThat(retryCount)
-        .describedAs("Retry count is not within range")
-        .isLessThan(maxRetryCount).isGreaterThanOrEqualTo(0);
-    if(retryCount > 0) {
-      Assertions.assertThat(retryCount)
-          .describedAs("Retry count incorrect")
-          .isEqualTo(prevRetryCount + 1);
-      Assertions.assertThat(id_list[1])
-          .describedAs("Client req id should be unique")
-          .isNotEqualTo(prevClientRequestID);
-    }
-    prevRetryCount = retryCount;
-    prevClientRequestID = id_list[1];
+        .describedAs("Retry count incorrect")
+        .isEqualTo(retryNum);
   }
 }

@@ -4,11 +4,12 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.azurebfs.constants.AbfsHttpConstants;
-import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
+import org.apache.hadoop.fs.azurebfs.constants.AbfsOperationConstants;
 import org.apache.hadoop.fs.azurebfs.constants.HttpHeaderConfigurations;
 import org.apache.hadoop.fs.azurebfs.enums.Trilean;
 import org.apache.hadoop.fs.azurebfs.services.AbfsRestOperation;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
+import org.apache.hadoop.fs.azurebfs.utils.TracingContextFormat;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
@@ -47,7 +48,8 @@ public class TestTracingContext extends AbstractAbfsIntegrationTest {
       boolean includeInHeader) throws IOException {
     AzureBlobFileSystem fs = getFileSystem();
     TracingContext tracingContext = new TracingContext(clientCorrelationId,
-        fs.getFileSystemID(), AbfsOperations.TEST_OP, 1,null);
+        fs.getFileSystemID(), AbfsOperationConstants.TESTOP,
+        TracingContextFormat.ALL_ID_FORMAT,null);
     String correlationID = tracingContext.toString().split(":")[0];
     if (includeInHeader) {
       Assertions.assertThat(correlationID)

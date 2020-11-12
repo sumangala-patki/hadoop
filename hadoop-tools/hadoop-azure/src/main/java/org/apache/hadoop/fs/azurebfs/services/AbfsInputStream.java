@@ -28,7 +28,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.fs.azurebfs.constants.AbfsOperations;
+import org.apache.hadoop.fs.azurebfs.constants.AbfsOperationConstants;
 import org.apache.hadoop.fs.azurebfs.utils.Listener;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
 import org.slf4j.Logger;
@@ -103,7 +103,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     this.streamStatistics = abfsInputStreamContext.getStreamStatistics();
     this.inputStreamID = getInputStreamID();
     this.tracingContext = new TracingContext(tracingContext);
-    this.tracingContext.setOperation(AbfsOperations.READ);
+    this.tracingContext.setOperation(AbfsOperationConstants.READ);
     this.tracingContext.setStreamID(inputStreamID);
   }
 

@@ -34,7 +34,7 @@ public class TracingContext {
   private String primaryRequestID;
   private String streamID;
   private int retryCount;
-  private final String hadoopOpName;
+  private String hadoopOpName;
   private final TracingContextFormat format;
   private Listener listener = null;
 

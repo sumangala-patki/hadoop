@@ -137,6 +137,10 @@ public class AbfsConfiguration{
       DefaultValue = DEFAULT_MAX_RETRY_ATTEMPTS)
   private int maxIoRetries;
 
+  @BooleanConfigurationValidatorAnnotation(ConfigurationKey =
+      AZURE_DISABLE_EXP_RETRY_THROTTLING, DefaultValue = true)
+  private boolean disableExpRetryThrottling;
+
   @IntegerConfigurationValidatorAnnotation(ConfigurationKey = AZURE_CUSTOM_TOKEN_FETCH_RETRY_COUNT,
       MinValue = 0,
       DefaultValue = DEFAULT_CUSTOM_TOKEN_FETCH_RETRY_COUNT)
@@ -571,6 +575,10 @@ public class AbfsConfiguration{
 
   public int getMaxIoRetries() {
     return this.maxIoRetries;
+  }
+
+  public boolean isDisabledExpRetryThrottling() {
+    return disableExpRetryThrottling;
   }
 
   public int getCustomTokenFetchRetryCount() {

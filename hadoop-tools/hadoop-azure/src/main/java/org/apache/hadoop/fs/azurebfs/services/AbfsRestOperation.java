@@ -237,7 +237,9 @@ public class AbfsRestOperation {
       // dump the headers
       AbfsIoUtils.dumpHeadersToDebugLog("Request Headers",
           httpOperation.getConnection().getRequestProperties());
-      AbfsClientThrottlingIntercept.sendingRequest(operationType, abfsCounters);
+      if (!client.isDisableExpRetryThrottling() || retryCount == 0) {
+        AbfsClientThrottlingIntercept.sendingRequest(operationType, abfsCounters);
+      }
 
       if (hasRequestBody) {
         // HttpUrlConnection requires

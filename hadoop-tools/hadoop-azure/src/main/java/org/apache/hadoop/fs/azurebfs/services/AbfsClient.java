@@ -75,6 +75,7 @@ public class AbfsClient implements Closeable {
   private AccessTokenProvider tokenProvider;
   private SASTokenProvider sasTokenProvider;
   private final AbfsCounters abfsCounters;
+  private final boolean disableExpRetryThrottling;
 
   private AbfsClient(final URL baseUrl, final SharedKeyCredentials sharedKeyCredentials,
                     final AbfsConfiguration abfsConfiguration,
@@ -106,6 +107,8 @@ public class AbfsClient implements Closeable {
     this.userAgent = initializeUserAgent(abfsConfiguration, sslProviderName);
     this.abfsPerfTracker = abfsClientContext.getAbfsPerfTracker();
     this.abfsCounters = abfsClientContext.getAbfsCounters();
+    this.disableExpRetryThrottling = abfsConfiguration
+        .isDisabledExpRetryThrottling();
   }
 
   public AbfsClient(final URL baseUrl, final SharedKeyCredentials sharedKeyCredentials,
@@ -141,6 +144,10 @@ public class AbfsClient implements Closeable {
 
   ExponentialRetryPolicy getRetryPolicy() {
     return retryPolicy;
+  }
+
+  public boolean isDisableExpRetryThrottling() {
+    return disableExpRetryThrottling;
   }
 
   SharedKeyCredentials getSharedKeyCredentials() {
